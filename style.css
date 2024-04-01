@@ -1,14 +1,15 @@
 @charset "UTF-8";
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;900&display=swap");
 
 /* RESET */
 *,
-*::before, 
+*::before,
 *::after {
   margin: 0;
   padding: 0;
   box-sizing: inherit;
   font: inherit;
+  color: inherit;
 }
 
 ul,
@@ -24,9 +25,14 @@ body {
 :root {
   /* font */
   --font-size-default: 1.6rem;
-  --font-weight-normal : 400;
-  --font-weight-bold : 900;
-
+  --font-weight-normal: 400;
+  --font-weight-bold: 900;
+  /* colors */
+  --primary-color: #9eff3d;
+  --secondary-color: #161616;
+  --tertiary-color: #dcdcdc;
+  /* transitions */
+  --transition-default: all 0.2s;
 }
 
 /* BASE */
@@ -36,11 +42,80 @@ html {
   color-scheme: dark;
 }
 body {
-  font-size: var(--font-size-default);
   font-family: "Roboto", sans-serif;
   font-weight: var(--font-weight-normal);
+  color: var(--secondary-color);
+  font-size: calc(var(--font-size-default) + 1rem);
 }
 
-
-
 /* LAYOUT */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  margin: 25rem auto;
+  width: 100rem;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+/* COMPONENTS */
+
+/* button */
+.btn {
+  padding: 1.5rem;
+  border: none;
+  background-color: var(--primary-color);
+  transition: var(--transition-default);
+  cursor: pointer;
+}
+.btn-add {
+  display: flex;
+  gap: 1rem;
+}
+.icon-plus {
+  font-weight: var(--font-weight-bold);
+}
+.btn:hover {
+  opacity: 0.9;
+}
+.btn:active {
+  transform: translateY(0.1rem);
+}
+
+/* crypto list */
+.crypto-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+.crypto-list span {
+  flex: 1;
+  text-align: center;
+}
+.crypto-list__header {
+  background-color: var(--primary-color);
+  padding: 1.5rem;
+}
+
+.crypto-list__item {
+  background-color: var(--tertiary-color);
+  padding: 1.5rem;
+}
+
+.crypto-list__header,
+.crypto-list__item {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+}
+
+/* total value */
+.total {
+  background-color: var(--primary-color);
+  padding: 1.5rem;
+  display: flex;
+  gap: 2rem;
+  align-self: flex-end;
+}
