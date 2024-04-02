@@ -26,5 +26,27 @@
       </ul>
       <div class="total">Total <span class="total__value">$132</span></div>
     </main>
+
+    <div class="overlay hidden">
+      <form action="" class="form hidden">
+        <input
+          list="cryptos"
+          class="form__input"
+          name="cryptoName"
+          placeholder="Crypto name..."
+        />
+        <datalist id="cryptos">
+          <option value="bitcoin"></option>
+        </datalist>
+
+        <input
+          type="text"
+          class="form__input"
+          name="amount"
+          placeholder="Amount..."
+        />
+        <button type="submit" class="btn btn-add">Add</button>
+      </form>
+    </div>
   </body>
 </html>
