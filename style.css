@@ -32,7 +32,8 @@ body {
   --secondary-color: #161616;
   --tertiary-color: #dcdcdc;
   --secondary-color-transparent: rgba(0, 0, 0, 0.4);
-  --tertiary-color-dark : rgb(192, 192, 192);
+  --tertiary-color-dark: rgb(192, 192, 192);
+  --error-color: rgb(221, 11, 11);
   /* transitions */
   --transition-default: all 0.2s;
 }
@@ -60,7 +61,7 @@ body {
   align-items: flex-start;
   gap: 2rem;
 }
-.hidden{
+.hidden {
   display: none !important;
 }
 
@@ -132,29 +133,34 @@ body {
   background-color: var(--secondary-color-transparent);
   position: absolute;
   top: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* form */
 
-.form{
+.form {
   background-color: var(--tertiary-color);
   padding: 4rem;
   display: flex;
   flex-direction: column;
   gap: 2rem;
   align-items: flex-start;
-
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
-.form__input{
+.form__input {
   background-color: var(--tertiary-color-dark);
   border: none;
   padding: 1.5rem;
   outline: none;
 }
 
-.form__input:focus{
-  opacity: .8;
+.form__input:focus {
+  opacity: 0.8;
+}
+
+.form__error-message {
+  color: var(--error-color);
+  font-size: var(--font-size-default);
 }
