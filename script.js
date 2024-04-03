@@ -37,6 +37,7 @@ class Crypto {
 class App {
   ownedCryptos = [];
   cryptos = [];
+  total = 0;
   constructor() {
     this.reset();
 
@@ -49,7 +50,10 @@ class App {
     );
     formEl.addEventListener("submit", this.#addCrypto.bind(this));
   }
-
+  #updateTotal() {
+    this.total = this.ownedCryptos.reduce((sum , crypto) =>  sum+crypto.value, 0);
+    totalValueEl.textContent = numToUsd(this.total)
+  }
   #addCrypto(e) {
     // Prevent from doing default on form submit
     e.preventDefault();
@@ -73,6 +77,8 @@ class App {
       this.ownedCryptos.push(new Crypto(crypto.name, +crypto.priceUsd, amount));
       // Render Crypto List
       this.#renderCryptoList();
+      // Update total value
+      this.#updateTotal()
     } else {
       // Show this error message in the form
       this.#renderOrhideFormErrorMessage("Pleas enter correct values.", true);
@@ -120,12 +126,12 @@ class App {
   }
 
   #getCryptos = async function () {
-    const data = await getJSON("https://api.coincap.io/v2/assets?limit=200");
+    const data = await getJSON("https://api.coincap.io/v2/assets?limit=600");
     this.cryptos = data.data;
   };
 
   #addCryptoOptions = async function () {
-    // Get 200 first cryptos from API and storing in cryptos array
+    // Get 600 first cryptos from API and storing in cryptos array
     await this.#getCryptos();
     // Render options
     const markup = formEl
