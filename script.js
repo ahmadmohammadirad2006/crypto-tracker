@@ -27,9 +27,9 @@ class Crypto {
     this.name = name;
     this.price = price;
     this.amount = amount;
-    this.#setValue();
+    this._setValue();
   }
-  #setValue() {
+  _setValue() {
     this.value = this.price * this.amount;
   }
 }
@@ -42,19 +42,19 @@ class App {
     this.reset();
 
     // Add options for name input in the form
-    this.#addCryptoOptions();
+    this._addCryptoOptions();
 
     // Attach handlers
     [addBtnEl, overlayEl].forEach((el) =>
-      el.addEventListener("click", this.#toggleForm)
+      el.addEventListener("click", this._toggleForm)
     );
-    formEl.addEventListener("submit", this.#addCrypto.bind(this));
+    formEl.addEventListener("submit", this._addCrypto.bind(this));
   }
-  #updateTotal() {
+  _updateTotal() {
     this.total = this.ownedCryptos.reduce((sum , crypto) =>  sum+crypto.value, 0);
     totalValueEl.textContent = numToUsd(this.total)
   }
-  #addCrypto(e) {
+  _addCrypto(e) {
     // Prevent from doing default on form submit
     e.preventDefault();
     // Take the data from form
@@ -70,31 +70,31 @@ class App {
     );
     if (crypto && Number.isFinite(amount) && amount > 0) {
       // Clear the form + hide error message
-      this.#clearForm();
+      this._clearForm();
       // Toggle the form
-      this.#toggleForm();
+      this._toggleForm();
       // Create a new crypto object and push it to ownedCryptos array
       this.ownedCryptos.push(new Crypto(crypto.name, +crypto.priceUsd, amount));
       // Render Crypto List
-      this.#renderCryptoList();
+      this._renderCryptoList();
       // Update total value
-      this.#updateTotal()
+      this._updateTotal()
     } else {
       // Show this error message in the form
-      this.#renderOrhideFormErrorMessage("Pleas enter correct values.", true);
+      this._renderOrhideFormErrorMessage("Pleas enter correct values.", true);
     }
   }
 
-  #renderCryptoList() {
+  _renderCryptoList() {
     // Remove items from crypto list
-    this.#removeCryptoItems();
+    this._removeCryptoItems();
     const markup = this.ownedCryptos
-      .map((crypto) => this.#generateCryptoItemMarkup(crypto))
+      .map((crypto) => this._generateCryptoItemMarkup(crypto))
       .join("");
     cryptoListEl.insertAdjacentHTML("beforeend", markup);
   }
 
-  #generateCryptoItemMarkup(cryptoObj) {
+  _generateCryptoItemMarkup(cryptoObj) {
     return `
     <li class="crypto-list__item">
           <span>${cryptoObj.name}</span>
@@ -109,14 +109,14 @@ class App {
     `;
   }
 
-  #clearForm() {
+  _clearForm() {
     // Hide error message
-    this.#renderOrhideFormErrorMessage();
+    this._renderOrhideFormErrorMessage();
     // Clear each input in the form
     formEl.querySelectorAll("input").forEach((inp) => (inp.value = ""));
   }
 
-  #renderOrhideFormErrorMessage(msg = "", render = false) {
+  _renderOrhideFormErrorMessage(msg = "", render = false) {
     formErrorMsgEl.textContent = msg;
     if (render) {
       formErrorMsgEl.classList.remove("hidden");
@@ -125,31 +125,31 @@ class App {
     }
   }
 
-  #getCryptos = async function () {
+  _getCryptos = async function () {
     const data = await getJSON("https://api.coincap.io/v2/assets?limit=600");
     this.cryptos = data.data;
   };
 
-  #addCryptoOptions = async function () {
+  _addCryptoOptions = async function () {
     // Get 600 first cryptos from API and storing in cryptos array
-    await this.#getCryptos();
+    await this._getCryptos();
     // Render options
     const markup = formEl
       .querySelector("datalist")
-      .insertAdjacentHTML("afterbegin", this.#generateOptionsMarkup());
+      .insertAdjacentHTML("afterbegin", this._generateOptionsMarkup());
   };
 
-  #generateOptionsMarkup() {
+  _generateOptionsMarkup() {
     return this.cryptos
       .map((crypto) => `<option value="${crypto.id}"></option>`)
       .join("");
   }
 
-  #toggleForm(e) {
+  _toggleForm(e) {
     [overlayEl, formEl].forEach((el) => el.classList.toggle("hidden"));
   }
 
-  #removeCryptoItems() {
+  _removeCryptoItems() {
     cryptoListEl
       .querySelectorAll(".crypto-list__item")
       .forEach((item) => item.remove());
@@ -157,7 +157,7 @@ class App {
 
   reset() {
     // Remove items from crypto list
-    this.#removeCryptoItems();
+    this._removeCryptoItems();
     // Reset total value
     totalValueEl.textContent = "$0";
   }
