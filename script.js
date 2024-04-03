@@ -22,9 +22,8 @@ const numToUsd = function (num) {
 
 class Crypto {
   value;
-  id = +new Date();
-  constructor(name, price, amount) {
-    this.name = name;
+  constructor(id, price, amount) {
+    this.id = id;
     this.price = price;
     this.amount = amount;
     this._setValue();
@@ -39,8 +38,19 @@ class App {
   cryptos = [];
   total = 0;
   constructor() {
+    this.init();
+  }
+  init = async function name(params) {
     this.reset();
 
+    // Get 1000 cryptos from API
+    await this._getCryptos();
+
+    // Get owned cryptos from localstorage and store it in ownedCryptos array
+    if (this._getOwnedCryptos()) {
+      this._renderCryptoList();
+      this._updateTotal();
+    }
     // Add options for name input in the form
     this._addCryptoOptions();
 
@@ -49,11 +59,32 @@ class App {
       el.addEventListener("click", this._toggleForm)
     );
     formEl.addEventListener("submit", this._addCrypto.bind(this));
-  }
+  };
+
   _updateTotal() {
-    this.total = this.ownedCryptos.reduce((sum , crypto) =>  sum+crypto.value, 0);
-    totalValueEl.textContent = numToUsd(this.total)
+    this.total = this.ownedCryptos.reduce(
+      (sum, crypto) => sum + crypto.value,
+      0
+    );
+    totalValueEl.textContent = numToUsd(this.total);
   }
+  _persistOwnedCryptos() {
+    window.localStorage.setItem("cryptos", JSON.stringify(this.ownedCryptos));
+  }
+  _getOwnedCryptos() {
+    const storage = window.localStorage.getItem("cryptos");
+    if (!storage) return 0;
+    const data = JSON.parse(storage);
+    console.log(data);
+    this.ownedCryptos = data.map((oldCrypto) => {
+      const newCrypto = this.cryptos.find(
+        (crypto) => crypto.id === oldCrypto.id
+      );
+      return new Crypto(newCrypto.id, +newCrypto.priceUsd, oldCrypto.amount);
+    });
+    return 1;
+  }
+
   _addCrypto(e) {
     // Prevent from doing default on form submit
     e.preventDefault();
@@ -62,11 +93,11 @@ class App {
     // Convert it to an Object
     const data = Object.fromEntries(dataArr);
 
-    const cryptoName = data.cryptoName;
+    const cryptoId = data.cryptoId;
     const amount = +data.amount;
     // Validation
     const crypto = this.cryptos.find(
-      (crypto) => crypto.id === cryptoName.toLowerCase()
+      (crypto) => crypto.id === cryptoId.toLowerCase()
     );
     if (crypto && Number.isFinite(amount) && amount > 0) {
       // Clear the form + hide error message
@@ -74,11 +105,13 @@ class App {
       // Toggle the form
       this._toggleForm();
       // Create a new crypto object and push it to ownedCryptos array
-      this.ownedCryptos.push(new Crypto(crypto.name, +crypto.priceUsd, amount));
+      this.ownedCryptos.push(new Crypto(crypto.id, +crypto.priceUsd, amount));
       // Render Crypto List
       this._renderCryptoList();
       // Update total value
-      this._updateTotal()
+      this._updateTotal();
+      // Store ownedCryptos array in the localstorage
+      this._persistOwnedCryptos();
     } else {
       // Show this error message in the form
       this._renderOrhideFormErrorMessage("Pleas enter correct values.", true);
@@ -97,7 +130,7 @@ class App {
   _generateCryptoItemMarkup(cryptoObj) {
     return `
     <li class="crypto-list__item">
-          <span>${cryptoObj.name}</span>
+          <span>${cryptoObj.id}</span>
           <span>${
             cryptoObj.price > 1
               ? numToUsd(cryptoObj.price)
@@ -126,15 +159,13 @@ class App {
   }
 
   _getCryptos = async function () {
-    const data = await getJSON("https://api.coincap.io/v2/assets?limit=600");
+    const data = await getJSON("https://api.coincap.io/v2/assets?limit=1000");
     this.cryptos = data.data;
   };
 
   _addCryptoOptions = async function () {
-    // Get 600 first cryptos from API and storing in cryptos array
-    await this._getCryptos();
     // Render options
-    const markup = formEl
+    formEl
       .querySelector("datalist")
       .insertAdjacentHTML("afterbegin", this._generateOptionsMarkup());
   };
