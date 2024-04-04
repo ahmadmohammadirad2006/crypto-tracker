@@ -7,9 +7,13 @@ const totalValueEl = document.querySelector(".total__value");
 const overlayEl = document.querySelector(".overlay");
 const formEl = document.querySelector(".form");
 const formErrorMsgEl = document.querySelector(".form__error-message");
+const errorEl = document.querySelector(".error");
+const okBtnEl = document.querySelector(".error__ok");
 // Helper functions
 const getJSON = async function (url) {
   const res = await fetch(url);
+  console.log(res)
+  if (!res.ok) throw new Error(`Something went wrong (${res.status})`);
   return res.json();
 };
 
@@ -41,25 +45,40 @@ class App {
     this.init();
   }
   init = async function name(params) {
-    this.reset();
+    try {
+      this.reset();
+      // Add handler to click event on ok button
+      okBtnEl.addEventListener("click", this._closeError);
+      // Get 1000 cryptos from API
+      await this._getCryptos();
 
-    // Get 1000 cryptos from API
-    await this._getCryptos();
+      // Get owned cryptos from localstorage and store it in ownedCryptos array
+      if (this._getOwnedCryptos()) {
+        this._renderCryptoList();
+        this._updateTotal();
+      }
+      // Add options for name input in the form
+      this._addCryptoOptions();
 
-    // Get owned cryptos from localstorage and store it in ownedCryptos array
-    if (this._getOwnedCryptos()) {
-      this._renderCryptoList();
-      this._updateTotal();
+      // Attach handlers
+      [addBtnEl, overlayEl].forEach((el) =>
+        el.addEventListener("click", this._toggleForm)
+      );
+      formEl.addEventListener("submit", this._addCrypto.bind(this));
+    } catch (err) {
+      console.error(`💥 ${err.message}`);
+      this._renderErrorMessage(err.message);
     }
-    // Add options for name input in the form
-    this._addCryptoOptions();
-
-    // Attach handlers
-    [addBtnEl, overlayEl].forEach((el) =>
-      el.addEventListener("click", this._toggleForm)
-    );
-    formEl.addEventListener("submit", this._addCrypto.bind(this));
   };
+
+  _renderErrorMessage(msg) {
+    errorEl.querySelector(".error__message").textContent = msg;
+    errorEl.classList.remove("hidden");
+  }
+  _closeError() {
+    errorEl.querySelector(".error__message").textContent = "";
+    errorEl.classList.add("hidden");
+  }
 
   _updateTotal() {
     this.total = this.ownedCryptos.reduce(
@@ -163,12 +182,12 @@ class App {
     this.cryptos = data.data;
   };
 
-  _addCryptoOptions = async function () {
+  _addCryptoOptions() {
     // Render options
     formEl
       .querySelector("datalist")
       .insertAdjacentHTML("afterbegin", this._generateOptionsMarkup());
-  };
+  }
 
   _generateOptionsMarkup() {
     return this.cryptos
