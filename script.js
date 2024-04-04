@@ -1,6 +1,6 @@
 "use strict";
 
-// Select elements
+// SELECT ELEMENTS
 const addBtnEl = document.querySelector(".btn-add");
 const cryptoListEl = document.querySelector(".crypto-list");
 const totalValueEl = document.querySelector(".total__value");
@@ -10,13 +10,17 @@ const formErrorMsgEl = document.querySelector(".form__error-message");
 const errorEl = document.querySelector(".error");
 const okBtnEl = document.querySelector(".error__ok");
 
-// Helper functions
+// HELPER FUNCTIONS
+
+
+// It takes a string of url and makes a fetch request if the ok property of the response is false throws an error otherwise returns the data
 const getJSON = async function (url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Something went wrong (${res.status})`);
   return res.json();
 };
 
+// It takes a number and returns the number but formated by currency style of USD
 const numToUsd = function (num) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -24,6 +28,10 @@ const numToUsd = function (num) {
   }).format(num);
 };
 
+
+// It makes an object which has id, price,amount,value and code properties 
+// Example:
+// {id:"bitcoin" , price: 68,870.66 , amount : 2 , value : 137,839.01 , code: 487642387984290}
 class Crypto {
   value;
   code = +new Date();
@@ -40,6 +48,7 @@ class Crypto {
   }
 }
 
+// To control the entire app 
 class App {
   ownedCryptos = [];
   cryptos = [];
@@ -47,6 +56,8 @@ class App {
   constructor() {
     this.init();
   }
+
+  // An async function that is called at the beginning
   init = async function name(params) {
     try {
       this.reset();
@@ -84,6 +95,9 @@ class App {
     }
   };
 
+  // It takes the code of a crypto object and finds
+  // that crypto in the ownedCryptos array and 
+  // then deletes it from there and persists the ownedCryptos array  
   _deleteCrypto(code) {
     const indexOfCrypto = this.ownedCryptos.findIndex(
       (crypto) => crypto.code === code
@@ -92,15 +106,17 @@ class App {
     this._persistOwnedCryptos();
   }
 
+  // It takes a message and place it in the error__message element and then makes the error element appear
   _renderErrorMessage(msg) {
     errorEl.querySelector(".error__message").textContent = msg;
     errorEl.classList.remove("hidden");
   }
+  // It make the error message element empty and hides the error element
   _closeError() {
     errorEl.querySelector(".error__message").textContent = "";
     errorEl.classList.add("hidden");
   }
-
+  // It calculates the total value of all owned cryptos and places it in the total value element
   _updateTotal() {
     this.total = this.ownedCryptos.reduce(
       (sum, crypto) => sum + crypto.value,
@@ -108,9 +124,12 @@ class App {
     );
     totalValueEl.textContent = numToUsd(this.total);
   }
+
+  // It stores the ownedCryptos array in the localstorage
   _persistOwnedCryptos() {
     window.localStorage.setItem("cryptos", JSON.stringify(this.ownedCryptos));
   }
+  // It gets the ownedCryptos array from localstorage
   _getOwnedCryptos() {
     const storage = window.localStorage.getItem("cryptos");
     if (!storage) return 0;
@@ -129,6 +148,7 @@ class App {
     return 1;
   }
 
+  // ...
   _addCrypto(e) {
     // Prevent from doing default on form submit
     e.preventDefault();
@@ -162,6 +182,8 @@ class App {
     }
   }
 
+
+  // It clears the crypto list element from the items and puts the new markup in crypto list element 
   _renderCryptoList() {
     // Remove items from crypto list
     this._removeCryptoItems();
@@ -171,6 +193,7 @@ class App {
     cryptoListEl.insertAdjacentHTML("beforeend", markup);
   }
 
+  // Ittakes a crypto object and then generates the markup
   _generateCryptoItemMarkup(cryptoObj) {
     return `
     <li class="crypto-list__item">
@@ -189,6 +212,7 @@ class App {
     `;
   }
 
+  // This hides the error message of the form and makes the inputs empty
   _clearForm() {
     // Hide error message
     this._renderOrhideFormErrorMessage();
@@ -196,6 +220,7 @@ class App {
     formEl.querySelectorAll("input").forEach((inp) => (inp.value = ""));
   }
 
+  // This can be used to render the error message and hide the error message of the form
   _renderOrhideFormErrorMessage(msg = "", render = false) {
     formErrorMsgEl.textContent = msg;
     if (render) {
@@ -205,11 +230,13 @@ class App {
     }
   }
 
+  // This gets 1000 cryptos form API and stores it in cryptos array
   _getCryptos = async function () {
     const data = await getJSON("https://api.coincap.io/v2/assets?limit=1000");
     this.cryptos = data.data;
   };
 
+  // This puts the generated makrup for the crypto options in the datalist element of the form
   _addCryptoOptions() {
     // Render options
     formEl
@@ -217,22 +244,26 @@ class App {
       .insertAdjacentHTML("afterbegin", this._generateOptionsMarkup());
   }
 
+  // This generates the markup for crypto options
   _generateOptionsMarkup() {
     return this.cryptos
       .map((crypto) => `<option value="${crypto.id}"></option>`)
       .join("");
   }
 
+  // This toggles (hide or show) the form and the overlay
   _toggleForm(e) {
     [overlayEl, formEl].forEach((el) => el.classList.toggle("hidden"));
   }
 
+  // This clears the crypto list element of crypto items
   _removeCryptoItems() {
     cryptoListEl
       .querySelectorAll(".crypto-list__item")
       .forEach((item) => item.remove());
   }
 
+  // This resets the app (removing crypto items , setting total value to $0.00)
   reset() {
     // Remove items from crypto list
     this._removeCryptoItems();
