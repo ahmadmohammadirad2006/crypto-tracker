@@ -9,10 +9,10 @@ const formEl = document.querySelector(".form");
 const formErrorMsgEl = document.querySelector(".form__error-message");
 const errorEl = document.querySelector(".error");
 const okBtnEl = document.querySelector(".error__ok");
+
 // Helper functions
 const getJSON = async function (url) {
   const res = await fetch(url);
-  console.log(res)
   if (!res.ok) throw new Error(`Something went wrong (${res.status})`);
   return res.json();
 };
@@ -26,11 +26,14 @@ const numToUsd = function (num) {
 
 class Crypto {
   value;
-  constructor(id, price, amount) {
+  code = +new Date();
+  constructor(id, price, amount, code) {
     this.id = id;
     this.price = price;
     this.amount = amount;
     this._setValue();
+    if (!code) return;
+    this.code = code;
   }
   _setValue() {
     this.value = this.price * this.amount;
@@ -65,11 +68,29 @@ class App {
         el.addEventListener("click", this._toggleForm)
       );
       formEl.addEventListener("submit", this._addCrypto.bind(this));
+      // Attach handler to delete button of each crypto item
+      cryptoListEl.addEventListener(
+        "click",
+        function (e) {
+          const deleteBtn = e.target.closest(".crypto-list__delete");
+          if (deleteBtn) this._deleteCrypto(+deleteBtn.dataset.code);
+          this._renderCryptoList();
+          this._updateTotal();
+        }.bind(this)
+      );
     } catch (err) {
       console.error(`💥 ${err.message}`);
       this._renderErrorMessage(err.message);
     }
   };
+
+  _deleteCrypto(code) {
+    const indexOfCrypto = this.ownedCryptos.findIndex(
+      (crypto) => crypto.code === code
+    );
+    this.ownedCryptos.splice(indexOfCrypto, 1);
+    this._persistOwnedCryptos();
+  }
 
   _renderErrorMessage(msg) {
     errorEl.querySelector(".error__message").textContent = msg;
@@ -94,12 +115,16 @@ class App {
     const storage = window.localStorage.getItem("cryptos");
     if (!storage) return 0;
     const data = JSON.parse(storage);
-    console.log(data);
     this.ownedCryptos = data.map((oldCrypto) => {
       const newCrypto = this.cryptos.find(
         (crypto) => crypto.id === oldCrypto.id
       );
-      return new Crypto(newCrypto.id, +newCrypto.priceUsd, oldCrypto.amount);
+      return new Crypto(
+        newCrypto.id,
+        +newCrypto.priceUsd,
+        oldCrypto.amount,
+        oldCrypto.code
+      );
     });
     return 1;
   }
@@ -149,6 +174,9 @@ class App {
   _generateCryptoItemMarkup(cryptoObj) {
     return `
     <li class="crypto-list__item">
+    <button class="crypto-list__delete" data-code="${
+      cryptoObj.code
+    }">❌</button>
           <span>${cryptoObj.id}</span>
           <span>${
             cryptoObj.price > 1
@@ -209,7 +237,7 @@ class App {
     // Remove items from crypto list
     this._removeCryptoItems();
     // Reset total value
-    totalValueEl.textContent = "$0";
+    totalValueEl.textContent = "$0.00";
   }
 }
 
