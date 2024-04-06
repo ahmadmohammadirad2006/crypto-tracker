@@ -11,7 +11,7 @@ I built this application to practice my JS skills.
 
 ![crypto-tracker](crypto-tracker-screenshot.png)
 
-### Tech stack
+### Technologies
 
 - HTML
 - CSS
